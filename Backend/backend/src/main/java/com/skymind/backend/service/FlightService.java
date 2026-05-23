@@ -1,19 +1,22 @@
 package com.skymind.backend.service;
 
-import com.skymind.backend.dto.FlightSearchResponse;
+import com.skymind.backend.dto.*;
 import com.skymind.backend.externalApi.AviationstackClient;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public class FlightService {
 
-    private final AviationstackClient aviationstackClient;
+    private final AviationstackClient client;
 
-    public FlightService(AviationstackClient aviationstackClient) {
-        this.aviationstackClient = aviationstackClient;
+    public FlightService(AviationstackClient client) {
+        this.client = client;
     }
 
-    public FlightSearchResponse searchFlights(String departureIata) {
-        return aviationstackClient.searchFlights(departureIata);
+    public List<FlightResultDto> searchFlights(String depIata) {
+        FlightSearchResponse response = client.searchFlights(depIata);
+        return response.getData().stream().map(FlightMapper::toDto).toList();
     }
 }
