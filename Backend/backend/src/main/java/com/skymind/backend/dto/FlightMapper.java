@@ -9,8 +9,8 @@ public class FlightMapper {
         return FlightResultDto.builder()
                 .airline(flight.getAirline().getName())
                 .flightNumber(flight.getFlight().getNumber())
-                .departureAirport(flight.getDeparture().getAirport())
-                .arrivalAirport(flight.getArrival().getAirport())
+                .departureAirport(flight.getDeparture().getIata())
+                .arrivalAirport(flight.getArrival().getIata())
                 .departureTime(flight.getDeparture().getScheduled())
                 .arrivalTime(flight.getArrival().getScheduled())
                 .build();
