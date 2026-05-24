@@ -1,8 +1,8 @@
 package com.skymind.backend.service;
 
-
 import com.skymind.backend.dto.*;
 import com.skymind.backend.externalApi.AviationstackClient;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -12,29 +12,52 @@ import java.util.stream.Collectors;
 public class FlightService {
 
     private final AviationstackClient client;
+    private final FlightScoringService scoringService;
 
-    public FlightService(AviationstackClient client) {
+    public FlightService(AviationstackClient client, FlightScoringService scoringService) {
         this.client = client;
+        this.scoringService = scoringService;
     }
 
     public List<FlightResultDto> searchFlights(FlightSearchRequest request) {
 
         FlightSearchResponse response = client.searchFlights(request.getOrigin());
 
-        List<FlightResultDto> flights =
-                response.getData()
+        List<FlightResultDto> flights = response.getData().stream()
+                        .map(FlightMapper::toDto).collect(Collectors.toList());
+
+        if (request.getDestination() != null) {
+            flights = flights.stream().filter(f -> request.getDestination()
+                    .equalsIgnoreCase(f.getArrivalAirport())).toList();
+        }
+        if (request.getAirline() != null) {
+            flights = flights.stream().filter(f -> f.getAirline()
+                    .equalsIgnoreCase(request.getAirline())).toList();
+        }
+        return flights.stream().limit(request.getLimit()).toList();
+    }
+
+    public RecommendationResponse getRecommendations(FlightSearchRequest request) {
+
+        FlightSearchResponse response = client.searchFlights(request.getOrigin());
+        List<FlightResultDto> flights = response.getData()
                         .stream()
                         .map(FlightMapper::toDto)
-                        .collect(Collectors.toList());
-
+                        .toList();
         if (request.getDestination() != null) {
             flights = flights.stream().filter(f -> request.getDestination()
                             .equalsIgnoreCase(f.getArrivalAirport())).toList();
         }
         if (request.getAirline() != null) {
             flights = flights.stream().filter(f -> f.getAirline()
-                                    .equalsIgnoreCase(request.getAirline())).toList();
+                            .equalsIgnoreCase(request.getAirline())).toList();
         }
-        return flights.stream().limit(request.getLimit()).toList();
+        //Score
+        List<FlightScore> scoredFlights = scoringService.scoreFlights(flights ,request.getAirline());
+
+        return RecommendationResponse.builder()
+                .recommended(scoredFlights.get(0))
+                .top3(scoredFlights.stream().limit(3).toList())
+                .build();
     }
 }
