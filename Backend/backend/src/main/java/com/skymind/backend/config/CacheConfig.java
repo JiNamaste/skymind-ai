@@ -14,7 +14,7 @@ public class CacheConfig {
     @Bean
     public CacheManager cacheManager() {
 
-        CaffeineCacheManager manager = new CaffeineCacheManager("flightSearchCache");
+        CaffeineCacheManager manager = new CaffeineCacheManager("flightSearchCache","flights");
         manager.setCaffeine(Caffeine.newBuilder()
                         .expireAfterWrite(60, TimeUnit.MINUTES).maximumSize(200));
 

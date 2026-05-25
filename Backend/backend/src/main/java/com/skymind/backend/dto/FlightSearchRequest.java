@@ -13,4 +13,5 @@ public class FlightSearchRequest {
     private String destination;
     private String airline;
     private Integer limit = 10;
+    private String preference;
 }

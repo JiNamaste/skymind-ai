@@ -1,10 +1,11 @@
 package com.skymind.backend.controller;
 
-import com.skymind.backend.dto.FlightResultDto;
-import com.skymind.backend.dto.FlightSearchRequest;
-import com.skymind.backend.dto.RecommendationResponse;
+import com.skymind.backend.dto.*;
+import com.skymind.backend.service.FlightFilterService;
+import com.skymind.backend.service.FlightRecommendationService;
 import com.skymind.backend.service.FlightService;
 import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -14,9 +15,13 @@ import java.util.List;
 public class FlightController {
 
     private final FlightService flightService;
+    private final FlightRecommendationService recommendationService;
+    @Autowired
+    private FlightFilterService flightFilterService;
 
-    public FlightController(FlightService flightService) {
+    public FlightController(FlightService flightService,FlightRecommendationService recommendationService) {
         this.flightService = flightService;
+        this.recommendationService = recommendationService;
     }
 
 
@@ -28,5 +33,19 @@ public class FlightController {
     @PostMapping("/recommend")
     public RecommendationResponse recommend(@RequestBody FlightSearchRequest request) {
         return flightService.getRecommendations(request);
+    }
+
+    @GetMapping("/recommend")
+    public FlightRecommendation recommendFlights(@RequestParam String from, @RequestParam String to, @RequestParam String date) {
+
+        List<FlightOffer> flights = flightService.searchFlights(from, to, date);
+        return recommendationService.recommend(flights);
+    }
+
+    @PostMapping("/filter")
+    public List<FlightOffer> filterFlights(@RequestParam String from, @RequestParam String to, @RequestParam String date, @RequestBody FlightFilterRequest filterRequest) {
+
+        List<FlightOffer> flights = flightService.searchFlights(from, to, date);
+        return flightFilterService.filter(flights, filterRequest);
     }
 }
