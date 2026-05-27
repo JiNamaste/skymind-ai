@@ -1,16 +1,16 @@
 package com.skymind.backend.externalApi;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.skymind.backend.dto.FlightOffer;
 import com.skymind.backend.dto.FlightSearchResponse;
 import com.skymind.backend.exception.ExternalApiException;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.ObjectMapper;
+
 
 import java.util.ArrayList;
 import java.util.List;

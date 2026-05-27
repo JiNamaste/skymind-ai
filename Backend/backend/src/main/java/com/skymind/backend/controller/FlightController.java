@@ -1,11 +1,13 @@
 package com.skymind.backend.controller;
 
 import com.skymind.backend.dto.*;
+import com.skymind.backend.service.FlightAiService;
 import com.skymind.backend.service.FlightFilterService;
 import com.skymind.backend.service.FlightRecommendationService;
 import com.skymind.backend.service.FlightService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,6 +20,8 @@ public class FlightController {
     private final FlightRecommendationService recommendationService;
     @Autowired
     private FlightFilterService flightFilterService;
+    @Autowired
+    private FlightAiService flightAiService;
 
     public FlightController(FlightService flightService,FlightRecommendationService recommendationService) {
         this.flightService = flightService;
@@ -40,6 +44,16 @@ public class FlightController {
 
         List<FlightOffer> flights = flightService.searchFlights(from, to, date);
         return recommendationService.recommend(flights);
+    }
+
+    @GetMapping("/recommend-ai")
+    public ResponseEntity<String> recommendWithAi(@RequestParam String from, @RequestParam String to, @RequestParam String date) {
+        List<FlightOffer> flights = flightService.searchFlights(from, to, date);
+        if (flights == null || flights.isEmpty()) {
+            return ResponseEntity.ok("No flights found for selected route.");
+        }
+        String aiResponse = flightAiService.explainRecommendation(flights);
+        return ResponseEntity.ok(aiResponse);
     }
 
     @PostMapping("/filter")
