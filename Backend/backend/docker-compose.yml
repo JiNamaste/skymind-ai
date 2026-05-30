@@ -1,0 +1,40 @@
+services:
+
+  postgres:
+    image: postgres:16
+    container_name: skymind-postgres
+    environment:
+      POSTGRES_DB: skymind_ai
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123
+    ports:
+      - "5432:5432"
+    volumes:
+      - skymind_postgres_data:/var/lib/postgresql/data
+
+  ollama:
+    image: ollama/ollama
+    container_name: skymind-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+
+  skymind-app:
+    build: .
+    container_name: skymind-backend
+    depends_on:
+      - postgres
+      - ollama
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/skymind_ai
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: 123
+      AVIATIONSTACK_API_KEY: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+      OLLAMA_BASE_URL: http://ollama:11434
+
+volumes:
+  skymind_postgres_data:
+  ollama_data:
