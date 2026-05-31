@@ -1,14 +1,13 @@
 services:
-
   postgres:
     image: postgres:16
     container_name: skymind-postgres
     environment:
-      POSTGRES_DB: skymind_ai
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: 123
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     ports:
-      - "5432:5432"
+      - "${DB_PORT}:5432"
     volumes:
       - skymind_postgres_data:/var/lib/postgresql/data
 
@@ -20,20 +19,32 @@ services:
     volumes:
       - ollama_data:/root/.ollama
 
+  redis:
+    image: redis:7
+    container_name: skymind-redis
+    ports:
+      - "6379:6379"
+
   skymind-app:
     build: .
     container_name: skymind-backend
     depends_on:
       - postgres
+      - redis
       - ollama
     ports:
       - "8080:8080"
+      - "5005:5005"
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/skymind_ai
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: 123
-      AVIATIONSTACK_API_KEY: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-      OLLAMA_BASE_URL: http://ollama:11434
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${DB_NAME}
+      SPRING_DATASOURCE_USERNAME: ${DB_USER}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      AVIATIONSTACK_API_KEY: ${AVIATIONSTACK_API_KEY}
+      SERP_API_KEY: ${SERP_API_KEY}
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL}
+      JAVA_TOOL_OPTIONS: -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
 
 volumes:
   skymind_postgres_data:

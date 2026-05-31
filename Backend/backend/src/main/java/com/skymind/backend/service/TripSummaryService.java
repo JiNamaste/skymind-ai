@@ -3,6 +3,7 @@ package com.skymind.backend.service;
 import com.skymind.backend.dto.FlightOffer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -11,6 +12,10 @@ public class TripSummaryService {
 
     private final ChatClient chatClient;
 
+    @Cacheable(
+            value = "tripSummaryCache",
+            key = "T(java.util.Objects).hash(#bestFlight)"
+    )
     public String generateSummary(FlightOffer bestFlight) {
 
         String prompt = String.format("""

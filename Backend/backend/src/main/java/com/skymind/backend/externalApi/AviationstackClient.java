@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 
 import java.util.ArrayList;
@@ -24,6 +25,12 @@ public class AviationstackClient {
 
     @Value("${aviationstack.base.url}")
     private String baseUrl;
+
+    @Value("${serpApi.token}")
+    private String serpApiKey;
+
+    @Value("${serpApi.base.url}")
+    private String serpApiBaseURL;
 
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
@@ -47,79 +54,60 @@ public class AviationstackClient {
             value = "flights", key = "#from + '-' + #to + '-' + #date"
     )
     public List<FlightOffer> searchFlights(String from, String to, String date) {
-//
-//        String url = baseUrl + "/flights" + "?access_key=" + apiKey + "&dep_iata=" + from + "&arr_iata=" + to + "&flight_date=" + date;
-//        String response = restTemplate.getForObject(url, String.class);
 
-        List<FlightOffer> flights = new ArrayList<>();
+        String url = UriComponentsBuilder
+                .fromHttpUrl(serpApiBaseURL)
+                .queryParam("engine", "google_flights")
+                .queryParam("departure_id", from)
+                .queryParam("arrival_id", to)
+                .queryParam("outbound_date", date)
+                .queryParam("type", 2)
+                .queryParam("currency", "INR")
+                .queryParam("hl", "en")
+                .queryParam("api_key", serpApiKey)
+                .toUriString();
 
-        flights.add(
-                FlightOffer.builder()
-                        .airline("IndiGo")
-                        .flightNumber("6E-2134")
-                        .departureAirport(from)
-                        .arrivalAirport(to)
-                        .departureTime(date + "T08:00")
-                        .arrivalTime(date + "T10:30")
-                        .duration(150)
-                        .stops(0)
-                        .price(5200.0)
-                        .currency("INR")
-                        .build()
-        );
+        String response = restTemplate.getForObject(url, String.class);
 
-        flights.add(
-                FlightOffer.builder()
-                        .airline("Air India")
-                        .flightNumber("AI-507")
-                        .departureAirport(from)
-                        .arrivalAirport(to)
-                        .departureTime(date + "T09:30")
-                        .arrivalTime(date + "T12:45")
-                        .duration(195)
-                        .stops(1)
-                        .price(4700.0)
-                        .currency("INR")
-                        .build()
-        );
-
-        return flights;
-        //return mapResponse(response);
-    }
-
-    private List<FlightOffer> mapResponse(String response) {
-
-        List<FlightOffer> flights = new ArrayList<>();
         try {
             JsonNode root = objectMapper.readTree(response);
-            JsonNode data = root.get("data");
-
-            if (data != null && data.isArray()) {
-
-                for (JsonNode node : data) {
-
-                    FlightOffer offer =
-                            FlightOffer.builder()
-                                    .airline(node.path("airline").path("name").asText())
-                                    .flightNumber(node.path("flight").path("iata").asText())
-                                    .departureAirport(node.path("departure").path("iata").asText())
-                                    .arrivalAirport(node.path("arrival").path("iata").asText())
-                                    .departureTime(node.path("departure").path("scheduled").asText())
-                                    .arrivalTime(node.path("arrival").path("scheduled").asText())
-                                    .duration(0)
-                                    .stops(0)
-                                    .price(0.0)
-                                    .currency("INR")
-                                    .build();
-
-                    flights.add(offer);
-                }
-            }
-
+            return mapFlights(root);
         } catch (Exception e) {
-            throw new RuntimeException("Error parsing AviationStack response", e);
+            throw new RuntimeException(
+                    "Unable to parse flight response", e);
+        }
+    }
+
+    private List<FlightOffer> mapFlights(JsonNode root) {
+        List<FlightOffer> offers = new ArrayList<>();
+        extractFlights(root.path("best_flights"), offers);
+        extractFlights(root.path("other_flights"), offers);
+        return offers;
+    }
+
+    private void extractFlights(JsonNode flightArray, List<FlightOffer> offers) {
+
+        if (!flightArray.isArray()) {
+            return;
         }
 
-        return flights;
+        for (JsonNode flight : flightArray) {
+            FlightOffer offer = new FlightOffer();
+            JsonNode legs = flight.path("flights");
+            JsonNode firstLeg = legs.get(0);
+            JsonNode lastLeg = legs.get(legs.size() - 1);
+
+            offer.setAirline(firstLeg.path("airline").asText());
+            offer.setFlightNumber(firstLeg.path("flight_number").asText());
+            offer.setDepartureAirport(firstLeg.path("departure_airport").path("id").asText());
+            offer.setArrivalAirport(lastLeg.path("arrival_airport").path("id").asText());
+            offer.setDepartureTime(firstLeg.path("departure_airport").path("time").asText());
+            offer.setArrivalTime(lastLeg.path("arrival_airport").path("time").asText());
+            offer.setDuration(flight.path("total_duration").asInt());
+            offer.setStops(flight.path("layovers").size());
+            offer.setPrice(flight.path("price").asDouble());
+            offer.setCurrency("INR");
+            offers.add(offer);
+        }
     }
 }

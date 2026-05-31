@@ -18,6 +18,7 @@ public class FlightAiService {
     private final ObjectMapper objectMapper;
     private final UserPreferenceService userPreferenceService;
 
+
     public AiRecommendationResponse explainRecommendation(List<FlightOffer> flights) {
 
         try {

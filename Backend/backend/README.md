@@ -42,23 +42,59 @@ The platform integrates real-time flight data, recommendation engines, AI-powere
     * Departure Time
     * Arrival Time
 
-## Performance Optimization
 
-* Response Caching
-* Reduced external API calls
-* Faster repeated searches
 
 ## API Documentation
 
 * Swagger/OpenAPI Integration
 * Interactive API Testing
 
+
+
+## AI Trip Planner
+
+* Generate AI-powered travel itineraries
+* Budget-aware trip planning
+* Day-wise travel schedule generation
+* Budget breakdown recommendations
+* Travel tips and suggestions
+* Powered by Ollama + Llama 3.1
+
+## Date-Based Flight Search
+
+* Search flights using:
+
+  * Source Airport
+  * Destination Airport
+  * Travel Date
+* More accurate travel planning experience
+
+## Multi-Source Travel Intelligence
+
+* AviationStack API Integration
+* SerpApi Integration
+* AI-powered travel recommendations
+* Aggregated travel insights from multiple data sources
+
+## Redis Distributed Caching
+
+* Flight Search Response Caching
+* AI Trip Planner Response Caching
+* Reduced API calls
+* Reduced LLM inference calls
+* Improved response times
+
+## Performance Optimization
+
+* Response Caching
+* Reduced external API calls
+* Faster repeated searches
+
 ## Containerized Deployment
 
 * Dockerized Spring Boot Application
 * Docker Compose Support
 * Ollama Container Integration
-
 ---
 
 # 🛠 Tech Stack
@@ -78,6 +114,16 @@ The platform integrates real-time flight data, recommendation engines, AI-powere
 
 * Ollama
 * Llama 3.1 : 8B
+
+## Caching
+
+* Redis
+
+## External APIs
+
+* AviationStack API
+* SerpApi
+
 
 ## Documentation
 
@@ -307,6 +353,12 @@ Use Swagger to:
 ---
 
 # 🐳 Docker Setup
+## Included Containers
+
+* Spring Boot Application
+* PostgreSQL
+* Redis
+* Ollama
 
 ## Build and Run
 
@@ -383,16 +435,18 @@ This project helped me gain hands-on experience with:
 * PostgreSQL Integration
 * API Documentation
 * Backend System Design
-
+- Redis Distributed Caching
+- SerpApi Integration
+- AI Trip Planning
+- Docker Compose Orchestration
+- Multi-Source Data Aggregation
 ---
 
 # 🔮 Future Enhancements
 
 * User Authentication & Authorization
 * Search History
-* Redis Caching
 * Personalized Recommendations
-* AI Trip Planner
 * Hotel Recommendations
 * Weather Integration
 * Flight Price Prediction
@@ -400,6 +454,33 @@ This project helped me gain hands-on experience with:
 * Microservices Architecture
 
 ---
+# 📡 Available APIs
+
+## Flight Search API
+
+Search flights using departure airport.
+
+## Flight Search By Source, Destination & Date
+
+Search flights using:
+
+* Source Airport
+* Destination Airport
+* Travel Date
+
+## AI Flight Recommendation API
+
+Generate AI-powered flight recommendations.
+
+## AI Trip Planner API
+
+Generate:
+
+* Budget Breakdown
+* Day-wise Itinerary
+* Travel Tips
+* Personalized Travel Recommendations
+
 
 # 👨‍💻 Author
 
